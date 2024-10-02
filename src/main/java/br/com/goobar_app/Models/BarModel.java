@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 
 @Entity
 @Table(name = "Bar")
@@ -21,32 +23,35 @@ public class BarModel extends GenericModel {
     @Column(unique = true, nullable = false, length = 50)
     private String nomebar;
 
-    @Column(unique = true)
-    private String email;
 
-    @Column(unique = true, nullable = false, length = 255)
+    @Column(nullable = false, length = 255)
     private String descricao;
-
-    @Column (nullable = false,length = 255)
-    private String imagemurl;
-
     @Column(unique = true, nullable = false, length = 14)
     private String cnpj;
     @Column(unique = true)
+    private String email;
+    @Column (nullable = false,length = 255)
+    private String imagemurl;
+
+
+    @Column()
     private Boolean wifi = false;
-    @Column(unique = true)
+    @Column()
     private Boolean tv = false;
-    @Column(unique = true)
+    @Column()
     private Boolean arcondicionado = false;
-    @Column(unique = true)
+    @Column()
     private Boolean estacionamento = false;
-    @Column(unique = true)
+    @Column()
     private Boolean mesabilhar = false;
-    @Column(unique = true)
+    @Column()
     private Boolean musicaaovivo = false;
-    @Column(unique = true)
+    @Column()
     private Boolean praia = false;
-    @Column(unique = true)
+    @Column()
     private Boolean arlivre = false;
+
+
+
 
 }

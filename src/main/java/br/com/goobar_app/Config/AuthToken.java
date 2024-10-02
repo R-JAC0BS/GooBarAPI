@@ -37,7 +37,7 @@ public class AuthToken extends OncePerRequestFilter {
             var userDetails = this.usuarioRepository.findByEmail(email).orElse(null);
             var user = this.usuarioRepository.findByEmail(email);
             assert userDetails != null;
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user, null, userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user, null, null);
 
 
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

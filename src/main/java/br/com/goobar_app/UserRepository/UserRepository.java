@@ -18,4 +18,5 @@ public interface UserRepository extends GenericRepository <UserModel> {
     boolean existsByCpfAndIdNot(String cpf, UUID id);
 
     Optional<UserModel> findByEmail(String email);
+
 }

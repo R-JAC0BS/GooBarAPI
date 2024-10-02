@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -57,6 +58,14 @@ public class UserService implements UserDetailsService {
         userModel.setRole(TypeRole.USUARIO);
         userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
         return userRepository.save(userModel);
+    }
+
+    public String DeleteAcount (String email)throws Exception{
+
+            Optional<UserModel> user = userRepository.findByEmail(email);
+            user.ifPresent(model -> userRepository.delete(model));
+
+      return "Usuario deletado com sucesso";
     }
 
 

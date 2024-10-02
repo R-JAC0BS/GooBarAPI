@@ -22,11 +22,12 @@ public class ConfigSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,AuthToken authToken) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "auth/login").permitAll()
-                        .requestMatchers("Bar").authenticated())
+                        .requestMatchers("Bar/").authenticated()
+                        )
 
                 .addFilterBefore(authToken, UsernamePasswordAuthenticationFilter.class);
 

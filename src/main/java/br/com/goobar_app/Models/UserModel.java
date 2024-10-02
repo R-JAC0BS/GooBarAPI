@@ -24,14 +24,13 @@ public class UserModel extends GenericModel implements UserDetails {
 
     @Column(unique = true, nullable = false, length = 50)
     private String username;
-    @JsonIgnore
+
     @Column (unique = true, nullable = false, length = 50)
     private String email;
 
     @Column(unique = true, nullable = false, length = 11)
     private String cpf;
 
-    @JsonIgnore
     @Column (unique = true, nullable = false, length = 100)
     private String password;
 
@@ -41,7 +40,10 @@ public class UserModel extends GenericModel implements UserDetails {
     @OneToOne (mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
     private BarModel bar;
-
+    @Override
+    public String toString() {
+        return this.email;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
