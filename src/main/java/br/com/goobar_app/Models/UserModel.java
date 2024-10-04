@@ -20,7 +20,7 @@ import java.util.UUID;
 @Table(name = "User_table")
 @Getter
 @Setter
-public class UserModel extends GenericModel implements UserDetails {
+public class UserModel <T> extends GenericModel implements UserDetails {
 
     @Column(unique = true, nullable = false, length = 50)
     private String username;
@@ -29,7 +29,7 @@ public class UserModel extends GenericModel implements UserDetails {
     private String email;
 
     @Column(unique = true, nullable = false, length = 11)
-    private String cpf;
+    private String telefone;
 
     @Column (unique = true, nullable = false, length = 100)
     private String password;
@@ -37,9 +37,9 @@ public class UserModel extends GenericModel implements UserDetails {
     @Enumerated(EnumType.STRING)
     private TypeRole role;
 
-    @OneToOne (mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany (mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private BarModel bar;
+    private List<BarModel> bar;
     @Override
     public String toString() {
         return this.email;
@@ -48,4 +48,6 @@ public class UserModel extends GenericModel implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
+
+
 }

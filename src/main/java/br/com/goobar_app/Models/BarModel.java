@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 public class BarModel extends GenericModel {
 
-    @OneToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
     private UserModel user;
@@ -26,13 +26,10 @@ public class BarModel extends GenericModel {
 
     @Column(nullable = false, length = 255)
     private String descricao;
-    @Column(unique = true, nullable = false, length = 14)
-    private String cnpj;
-    @Column(unique = true)
+    @Column(name = "email")
     private String email;
     @Column (nullable = false,length = 255)
     private String imagemurl;
-
 
     @Column()
     private Boolean wifi = false;
@@ -51,6 +48,12 @@ public class BarModel extends GenericModel {
     @Column()
     private Boolean arlivre = false;
 
+
+    @Column (name = "avaliacao" )
+    private Double  avaliacao = 0.0 ;
+
+    @Column (name = "numerodeavaliacao" )
+    private Integer numerodeavaliacao = 0;
 
 
 

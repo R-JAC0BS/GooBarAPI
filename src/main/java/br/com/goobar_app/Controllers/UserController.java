@@ -5,6 +5,8 @@ import br.com.goobar_app.Config.JwtUtils;
 import br.com.goobar_app.DTOS.LoginDTOS;
 import br.com.goobar_app.DTOS.RegisterDto;
 import br.com.goobar_app.Models.UserModel;
+import br.com.goobar_app.UserRepository.UserRepository;
+import br.com.goobar_app.components.ExtractEmail;
 import br.com.goobar_app.service.BarService;
 import br.com.goobar_app.service.UserService;
 import jakarta.validation.Valid;
@@ -29,6 +31,8 @@ public class UserController {
     @Autowired
     private final AuthenticationConfiguration auth;
     private BarService barService;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     public UserController(AuthenticationConfiguration auth) {
@@ -36,30 +40,45 @@ public class UserController {
     }
 
 
-    @PostMapping ("/register")
+    @PostMapping("/register")
     public ResponseEntity<UserModel> register(@Valid @RequestBody RegisterDto registerDto) throws Exception {
         BeanUtils.copyProperties(registerDto, userModel);
+
         userService.saveAcount(userModel);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
+
     }
 
-    @PostMapping ("/login")
-    public ResponseEntity <String> login ( @RequestBody LoginDTOS loginDto) throws Exception {
-        auth.getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(loginDto.email(),loginDto.password()));
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginDTOS loginDto) throws Exception {
+
+        auth.getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(loginDto.email(), loginDto.password()));
+
         String jwtToken = JwtUtils.generateTokenFromUsername(loginDto.email());
+
         return ResponseEntity.ok(jwtToken);
     }
 
     @DeleteMapping("DeleteUser")
-    public ResponseEntity <String> DeleteUser () throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        //Extrair Email do SecurityContextHolder
-        Optional<UserModel> optionalUserModel = (Optional<UserModel>) authentication.getPrincipal();
-        //DownCast pra filtrar apenas o endereço de email e converter em String
-        String Email = optionalUserModel.map(UserModel::getEmail).orElse("");
-        userService.DeleteAcount(Email);
+    public ResponseEntity<String> DeleteUser() throws Exception {
+        userService.DeleteAcount(ExtractEmail.extrairEmail());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User Deleted");
     }
+
+
+    /*
+    Rota endpoint FindUser retorna o seu propio usuario filtrando pelo email extraido do authenticate
+     */
+
+    @GetMapping("FindUser")
+    public ResponseEntity<Optional<UserModel>> FindUser(RegisterDto registerDto) throws Exception {
+        Optional<UserModel> user = userRepository.findByEmail(ExtractEmail.extrairEmail());
+        BeanUtils.copyProperties(user, registerDto);
+        return ResponseEntity.ok(user);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> exception(Exception e) {

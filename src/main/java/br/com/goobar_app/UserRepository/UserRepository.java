@@ -13,9 +13,8 @@ import java.util.UUID;
 public interface UserRepository extends GenericRepository <UserModel> {
 
     boolean existsByEmail(String email);
-    boolean existsByCpf(String cpf);
     boolean existsByEmailAndIdNot(String email, UUID id);
-    boolean existsByCpfAndIdNot(String cpf, UUID id);
+
 
     Optional<UserModel> findByEmail(String email);
 

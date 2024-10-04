@@ -52,8 +52,8 @@ public class UserService implements UserDetailsService {
             throw new Exception ("Email cannot be empty");
         if (userModel.getPassword().length() < 8)
             throw new Exception ("Password must be at least 8 characters");
-        if (Validador.validaCPF(userModel.getCpf()))
-            throw new Exception ("CPF invalido");
+        if (Validador.validaCPF(userModel.getTelefone()))
+            throw new Exception ("Numero de telefone invalido");
 
         userModel.setRole(TypeRole.USUARIO);
         userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
