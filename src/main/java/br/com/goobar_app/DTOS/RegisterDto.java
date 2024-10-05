@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record RegisterDto(@NotBlank String username,
                           @NotBlank String email,
-                          @NotBlank String cpf,
+                          @NotBlank String telefone,
                           @NotBlank String password
 ) {
 }

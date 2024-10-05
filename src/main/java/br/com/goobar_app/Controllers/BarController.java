@@ -3,8 +3,10 @@ package br.com.goobar_app.Controllers;
 
 import br.com.goobar_app.DTOS.AvaliacaoDTO;
 import br.com.goobar_app.DTOS.BarDto;
+import br.com.goobar_app.DTOS.EnderecoDTO;
 import br.com.goobar_app.Models.BarModel;
 
+import br.com.goobar_app.Models.EnderecoModel;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
@@ -91,6 +93,12 @@ public class BarController {
             throw new Exception(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    @PostMapping("location/{id}")
+    public ResponseEntity <EnderecoModel> enderecoBar(@PathVariable UUID id,@RequestBody EnderecoDTO enderecoDTO) throws Exception {
+            barService.setEndereco(id, enderecoDTO);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
 

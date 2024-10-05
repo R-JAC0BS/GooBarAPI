@@ -2,12 +2,16 @@ package br.com.goobar_app.service;
 
 
 import br.com.goobar_app.DTOS.AvaliacaoDTO;
+import br.com.goobar_app.DTOS.EnderecoDTO;
 import br.com.goobar_app.Models.BarModel;
+import br.com.goobar_app.Models.EnderecoModel;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.ROLE.TypeRole;
 import br.com.goobar_app.UserRepository.BarRepository;
+import br.com.goobar_app.UserRepository.EnderecoRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.Avalicao;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,14 +25,25 @@ import java.util.UUID;
 public class BarService {
 
     @Autowired
-    private UserRepository userRepository ;
+    private final UserRepository userRepository ;
 
     @Autowired
-    private BarRepository barRepository ;
+    private final BarRepository barRepository ;
+
+    @Autowired
+    private final EnderecoRepository enderecoRepository ;
+
+    EnderecoModel enderecoModel = new EnderecoModel();
+
+    public BarService(UserRepository userRepository, BarRepository barRepository, EnderecoRepository enderecoRepository) {
+        this.userRepository = userRepository;
+        this.barRepository = barRepository;
+        this.enderecoRepository = enderecoRepository;
+    }
 
     /*
-        Classe responsavel por salvar o Bar no usuario correspondente
-     */
+            Classe responsavel por salvar o Bar no usuario correspondente
+         */
     @Transactional
     public BarModel setUserBar(String email, BarModel barModel ) {
 
@@ -143,5 +158,31 @@ public class BarService {
 
 
         return "Nota lançada com sucesso";
+    }
+
+
+    @Transactional
+    public String setEndereco(UUID id, EnderecoDTO enderecoDTO) throws Exception {
+        Optional<BarModel> barOptional = barRepository.findById(id);
+        if (barOptional.isPresent()) {
+            BarModel bar = barOptional.get();
+
+            EnderecoModel enderecoModel = new EnderecoModel();
+            enderecoModel.setLatitude(enderecoDTO.latitude());
+            enderecoModel.setLongitude(enderecoDTO.
+                    longitude());
+            enderecoModel.setBarModel(bar); // Definindo a referência ao BarModel
+
+            // Salvar o EnderecoModel
+            enderecoRepository.save(enderecoModel);
+
+            // Salvar o BarModel se a relação for um-para-um
+            bar.setEndereco(enderecoModel);
+            barRepository.save(bar);
+
+            return "Endereço atualizado com sucesso!";
+        }
+
+        throw new Exception("Bar não encontrado");
     }
 }

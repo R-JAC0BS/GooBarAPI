@@ -1,6 +1,7 @@
 package br.com.goobar_app.Models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
@@ -30,6 +31,10 @@ public class BarModel extends GenericModel {
     private String email;
     @Column (nullable = false,length = 255)
     private String imagemurl;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "barModel")
+    @JsonManagedReference
+    private EnderecoModel endereco;
 
     @Column()
     private Boolean wifi = false;

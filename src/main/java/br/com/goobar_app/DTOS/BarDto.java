@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record BarDto(
         @NotBlank String nomebar,
         @NotBlank String descricao,
-        @NotBlank String cnpj,
         @NotBlank String imagemurl,
         Boolean wifi,
         Boolean tv,
