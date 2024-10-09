@@ -85,6 +85,11 @@ public class BarController {
 
     }
 
+
+
+
+
+
     @PutMapping("avaliacao/{id}")
     public ResponseEntity<Double> avaliacaoBar(@PathVariable UUID id, @RequestBody AvaliacaoDTO avaliacaoDTO) throws Exception {
         try {
@@ -94,6 +99,11 @@ public class BarController {
         }
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
+
+
+
+
+
 
     @PostMapping("location/{id}")
     public ResponseEntity <EnderecoModel> enderecoBar(@PathVariable UUID id,@RequestBody EnderecoDTO enderecoDTO) throws Exception {

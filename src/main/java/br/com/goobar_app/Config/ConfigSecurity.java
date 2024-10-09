@@ -26,10 +26,12 @@ public class ConfigSecurity {
                 .authorizeRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "auth/login").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "auth/Upload/").permitAll()
                         .requestMatchers("Bar/").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "Bar/BarDelete/").hasAuthority("CNPJ")
                                 .requestMatchers(HttpMethod.PUT, "Bar/avaliacao/").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "Bar/alter/").hasAuthority("CNPJ").anyRequest().authenticated()
+
                         )
 
                 .addFilterBefore(authToken, UsernamePasswordAuthenticationFilter.class);

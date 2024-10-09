@@ -2,23 +2,35 @@ package br.com.goobar_app.Controllers;
 
 
 import br.com.goobar_app.Config.JwtUtils;
+import br.com.goobar_app.DTOS.AlterUser;
 import br.com.goobar_app.DTOS.LoginDTOS;
 import br.com.goobar_app.DTOS.RegisterDto;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.ExtractEmail;
 import br.com.goobar_app.service.BarService;
+import br.com.goobar_app.service.ImageService;
 import br.com.goobar_app.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("auth")
@@ -28,13 +40,16 @@ public class UserController {
     private UserService userService;
     @Autowired
     private final AuthenticationConfiguration auth;
-    private BarService barService;
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    public UserController(AuthenticationConfiguration auth) {
+    private final ImageService imageService;
+
+    @Autowired
+    public UserController(AuthenticationConfiguration auth, ImageService imageService) {
         this.auth = auth;
+        this.imageService = imageService;
     }
 
 
@@ -58,7 +73,9 @@ public class UserController {
 
         return ResponseEntity.ok(jwtToken);
     }
-
+    /*
+        Deleta seu propio Usuario não tem como passar path via url ele apenas deleta o ususario que ja esta authenticado na sessão
+     */
     @DeleteMapping("DeleteUser")
     public ResponseEntity<String> DeleteUser() throws Exception {
         userService.DeleteAcount(ExtractEmail.extrairEmail());
@@ -78,6 +95,46 @@ public class UserController {
     }
 
 
+
+    /*
+         Rota para alterar seu propio usuario
+     */
+
+    @PutMapping("/AlterUser")
+    public ResponseEntity<String> AlterUser(@Valid @RequestBody AlterUser alterUser) throws Exception {
+       try {
+           userService.AlterAcount(ExtractEmail.extrairEmail(), alterUser);
+       }catch (Exception e){
+           return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+       }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("User Altered");
+    }
+
+
+    /*
+        Rota para enviar imagem
+     */
+
+    @PostMapping ("/Upload")
+    public ResponseEntity <String> upload (@RequestParam("file") MultipartFile file ) throws Exception {
+        imageService.uploadImage(file);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Imagem Salva");
+    }
+
+
+
+
+
+
+
+    @GetMapping("/profile-image")
+    public ResponseEntity<Resource> getUserProfileImage() throws Exception {
+        Resource image = imageService.getImage();
+       return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> exception(Exception e) {
         String cleanMessage = e.getMessage().replaceAll("[\\r\\n]", "");
@@ -86,4 +143,10 @@ public class UserController {
 
 
 
+
 }
+
+
+
+
+

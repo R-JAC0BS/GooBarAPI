@@ -1,19 +1,23 @@
 package br.com.goobar_app.service;
 
+import br.com.goobar_app.DTOS.AlterUser;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.ROLE.TypeRole;
 import br.com.goobar_app.UserRepository.UserRepository;
-import br.com.goobar_app.components.Validador;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -53,7 +57,7 @@ public class UserService implements UserDetailsService {
             throw new Exception ("Email cannot be empty");
         if (userModel.getPassword().length() < 8)
             throw new Exception ("Password must be at least 8 characters");
-        if (Validador.validaCPF(userModel.getTelefone()))
+        if (userModel.getTelefone() == null || userModel.getTelefone().isEmpty())
             throw new Exception ("Numero de telefone invalido");
 
         userModel.setRole(TypeRole.USUARIO);
@@ -62,7 +66,6 @@ public class UserService implements UserDetailsService {
     }
 
     public String DeleteAcount (String email)throws Exception{
-
             Optional<UserModel> user = userRepository.findByEmail(email);
             user.ifPresent(model -> userRepository.delete(model));
 
@@ -70,5 +73,25 @@ public class UserService implements UserDetailsService {
     }
 
 
+    public String AlterAcount (String email, AlterUser alterUser) throws Exception{
+        Optional<UserModel> user = userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            UserModel userModel = user.get();
+            if (alterUser.email()!= null){
+                userModel.setEmail(alterUser.email());
+            }
+            if (alterUser.username()!= null){
+                userModel.setUsername(alterUser.username());
+            }
+            if (alterUser.telefone()!=null){
+                userModel.setTelefone(alterUser.telefone());
+            }
+            if (alterUser.password()!= null){
+                userModel.setPassword(passwordEncoder.encode(alterUser.password()));
+            }
+            this.userRepository.save(userModel);
+        }
+        return "Usuario alterado com sucesso";
+    }
 
 }

@@ -33,7 +33,7 @@ public class ExtractEmail {
              */
             return optionalUserModel.map(UserModel::getEmail).orElse("");
         }catch (Exception e){
-            throw new Exception ("No se puede obtener el usuario");
+            throw new Exception ("Usuario não existe ou não esta autenticado");
         }
 
 

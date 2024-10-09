@@ -18,4 +18,6 @@ public interface UserRepository extends GenericRepository <UserModel> {
 
     Optional<UserModel> findByEmail(String email);
 
+    UserModel findByid(UUID id);
+
 }

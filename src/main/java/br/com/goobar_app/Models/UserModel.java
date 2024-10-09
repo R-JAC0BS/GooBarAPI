@@ -2,7 +2,6 @@ package br.com.goobar_app.Models;
 
 
 import br.com.goobar_app.ROLE.TypeRole;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,13 +13,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "User_table")
 @Getter
 @Setter
-public class UserModel <T> extends GenericModel implements UserDetails {
+public class UserModel extends GenericModel implements UserDetails {
 
     @Column(unique = true, nullable = false, length = 50)
     private String username;
@@ -30,6 +28,9 @@ public class UserModel <T> extends GenericModel implements UserDetails {
 
     @Column(unique = true, nullable = false, length = 11)
     private String telefone;
+
+    @Column()
+    private String imagemUrl;
 
     @Column (unique = true, nullable = false, length = 100)
     private String password;
