@@ -3,24 +3,31 @@ package br.com.goobar_app.Controllers;
 
 import br.com.goobar_app.DTOS.AvaliacaoDTO;
 import br.com.goobar_app.DTOS.BarDto;
+import br.com.goobar_app.DTOS.ComentarioDTO;
 import br.com.goobar_app.DTOS.EnderecoDTO;
 import br.com.goobar_app.Models.BarModel;
 
+import br.com.goobar_app.Models.ComentarioModel;
 import br.com.goobar_app.Models.EnderecoModel;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.ExtractEmail;
 import br.com.goobar_app.service.BarService;
+import br.com.goobar_app.service.ComentarioService;
+import br.com.goobar_app.service.ImageService;
 import br.com.goobar_app.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,10 +44,21 @@ public class BarController {
     public UserService userService;
     public static final BarModel barModel = new BarModel();
 
+
+    public final ImageService imageService;
     @Autowired
     public UserRepository userRepository;
     @Autowired
     private BarRepository barRepository;
+
+    @Autowired
+    public final ComentarioService comentarioService;
+
+    public BarController(ImageService imageService, ComentarioService comentarioService) {
+        this.imageService = imageService;
+        this.comentarioService = comentarioService;
+    }
+
 
     /*
         Metodo pra registar bar
@@ -54,7 +72,9 @@ public class BarController {
        return ResponseEntity.status(HttpStatus.CREATED).body(ExtractEmail.extrairEmail());
     }
     /*
-        Metodo para deletar o Bar registrado
+        Metodo para deletar o Bar seu propio Bar
+
+
      */
 
     @DeleteMapping("BarDelete/{DeleteId}")
@@ -67,7 +87,7 @@ public class BarController {
         }
 
 
-        return "Testando Delete";
+        return "Bar deletado com sucesso ";
     }
 
     /*
@@ -87,9 +107,6 @@ public class BarController {
 
 
 
-
-
-
     @PutMapping("avaliacao/{id}")
     public ResponseEntity<Double> avaliacaoBar(@PathVariable UUID id, @RequestBody AvaliacaoDTO avaliacaoDTO) throws Exception {
         try {
@@ -100,10 +117,9 @@ public class BarController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
-
-
-
-
+    /*
+        Metodo para adicionar um endereço ao bar
+     */
 
     @PostMapping("location/{id}")
     public ResponseEntity <EnderecoModel> enderecoBar(@PathVariable UUID id,@RequestBody EnderecoDTO enderecoDTO) throws Exception {
@@ -111,11 +127,35 @@ public class BarController {
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
+    @PostMapping ("/Upload")
+    public ResponseEntity <String> upload (@RequestParam("file") MultipartFile file ) throws Exception {
+        imageService.uploadImageBar(file);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Imagem bar salva");
+
+    }
+
+    @GetMapping("/bar-image/{id}")
+    public ResponseEntity<Resource> getUserProfileImage(@PathVariable UUID id) throws Exception {
+        Resource image = imageService.getImageBar(id);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+
+    }
+
 
 
     @GetMapping("/findBar")
     public List<BarModel> getUsers() {
         return barRepository.findAll();
+    }
+
+
+    /*
+        Adicionar Comentarios a um bar
+     */
+    @PostMapping("/coments/{id}")
+    public ResponseEntity<String> comentsBar(@PathVariable UUID id, @RequestBody ComentarioDTO comentario) throws Exception {
+        comentarioService.saveComent(ExtractEmail.extrairEmail(),id,comentario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(comentario.toString());
     }
 
 

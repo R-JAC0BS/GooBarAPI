@@ -11,7 +11,6 @@ import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.EnderecoRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.Avalicao;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,7 +100,6 @@ public class BarService {
             UserModel user = bar.get().getUser();
             if (user.getEmail().equals(email)) {
                 BarModel barsave = bar.get(); // Obtém o bar existente
-                // Atualiza os atributos de barsave, não de barModel
                 if (barModel.getDescricao() != null) {
                     barsave.setDescricao(barModel.getDescricao());
                 }
@@ -164,6 +162,10 @@ public class BarService {
     @Transactional
     public String setEndereco(UUID id, EnderecoDTO enderecoDTO) throws Exception {
         Optional<BarModel> barOptional = barRepository.findById(id);
+
+        if (enderecoDTO.latitude() == null || enderecoDTO.longitude() == null)
+            throw new Exception("Bar precisa de uma localizacao");
+
         if (barOptional.isPresent()) {
             BarModel bar = barOptional.get();
 

@@ -38,6 +38,17 @@ public class UserModel extends GenericModel implements UserDetails {
     @Enumerated(EnumType.STRING)
     private TypeRole role;
 
+
+    @JsonManagedReference
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_bar_favorites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "bar_id")
+    )
+    private List<BarModel> barFavoritos;
+
+
     @OneToMany (mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<BarModel> bar;

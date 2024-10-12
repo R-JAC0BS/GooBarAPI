@@ -1,8 +1,10 @@
 package br.com.goobar_app.service;
 
 import br.com.goobar_app.DTOS.AlterUser;
+import br.com.goobar_app.Models.BarModel;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.ROLE.TypeRole;
+import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +29,10 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private final UserRepository userRepository;
+
+
+    @Autowired
+    private BarRepository barRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -94,4 +101,30 @@ public class UserService implements UserDetailsService {
         return "Usuario alterado com sucesso";
     }
 
+
+
+    public String FavoriteBar(UUID id, String email) throws Exception {
+        Optional<BarModel> barModelOptional = barRepository.findById(id);
+        Optional<UserModel> userOptional = userRepository.findByEmail(email);
+
+        if (barModelOptional.isPresent() && userOptional.isPresent()) {
+            BarModel barModel = barModelOptional.get();
+            UserModel userModel = userOptional.get();
+            if (userModel.getBarFavoritos() == null) {
+                userModel.setBarFavoritos(new ArrayList<>());
+            }
+            if (!userModel.getBarFavoritos().contains(barModel)) {
+                userModel.getBarFavoritos().add(barModel);
+
+
+                barRepository.save(barModel);
+                userRepository.save(userModel);
+
+                return "Bar favorito atualizado com sucesso";
+            } else {
+                return "O bar já está nos favoritos";
+            }
+        }
+        return "Não foi possível salvar o bar";
+    }
 }

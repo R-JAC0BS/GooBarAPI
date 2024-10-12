@@ -1,6 +1,7 @@
 package br.com.goobar_app.Models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -36,6 +37,11 @@ public class BarModel extends GenericModel {
     @JsonManagedReference
     private EnderecoModel endereco;
 
+    @JsonBackReference
+    @ManyToMany(mappedBy = "barFavoritos")
+    private List<UserModel> usuariosFavoritos;
+
+
     @Column()
     private Boolean wifi = false;
     @Column()
@@ -52,6 +58,10 @@ public class BarModel extends GenericModel {
     private Boolean praia = false;
     @Column()
     private Boolean arlivre = false;
+
+    @OneToMany (mappedBy = "userComent", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List <ComentarioModel> comentarios;
 
 
     @Column (name = "avaliacao" )

@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -94,6 +95,10 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @GetMapping("allusers")
+    public List <UserModel> FindAllUsers() throws Exception {
+        return userRepository.findAll();
+    }
 
 
     /*
@@ -115,6 +120,14 @@ public class UserController {
     /*
         Rota para enviar imagem
      */
+
+
+    @PostMapping("/favoritos/{id}")
+    public ResponseEntity<String> Favoritos(@PathVariable UUID id) throws Exception {
+        userService.FavoriteBar(id, ExtractEmail.extrairEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body("Salvo nos favoritos");
+    }
+
 
     @PostMapping ("/Upload")
     public ResponseEntity <String> upload (@RequestParam("file") MultipartFile file ) throws Exception {
