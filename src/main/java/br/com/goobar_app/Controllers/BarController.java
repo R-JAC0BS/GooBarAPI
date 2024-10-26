@@ -37,25 +37,32 @@ import java.util.UUID;
 @RequestMapping("Bar")
 public class BarController {
     @Autowired
-    public BarService barService;
+    public final BarService barService;
     @Autowired
-    public UserDetailsService userDetailsService;
+    public final UserDetailsService userDetailsService;
     @Autowired
-    public UserService userService;
+    public  final UserService userService;
     public static final BarModel barModel = new BarModel();
-
-
     public final ImageService imageService;
     @Autowired
-    public UserRepository userRepository;
+    public final UserRepository userRepository;
     @Autowired
-    private BarRepository barRepository;
+    private final BarRepository barRepository;
 
     @Autowired
     public final ComentarioService comentarioService;
 
-    public BarController(ImageService imageService, ComentarioService comentarioService) {
+    public BarController(BarService barService, UserDetailsService userDetailsService, UserService userService,
+                         ImageService imageService, UserRepository userRepository,
+                         BarRepository barRepository,
+                         ComentarioService comentarioService) {
+        super();
+        this.barService = barService;
+        this.userDetailsService = userDetailsService;
+        this.userService = userService;
         this.imageService = imageService;
+        this.userRepository = userRepository;
+        this.barRepository = barRepository;
         this.comentarioService = comentarioService;
     }
 
@@ -65,6 +72,7 @@ public class BarController {
          */
     @PostMapping("/registerBar")
     public ResponseEntity <String>  registerBar(@RequestBody BarDto bar) throws Exception {
+        barModel.setId(null);
         //Copia os propiedades do BarDto para o barModel
         BeanUtils.copyProperties(bar, barModel);
         //Envia o Email e o objeto bar para classe barService
@@ -94,7 +102,8 @@ public class BarController {
         End point para fazer alteração nos atributos do produto
      */
     @PutMapping("alter/{id}")
-    public ResponseEntity<String> alterBar(@PathVariable UUID id, @RequestBody BarModel bar) throws Exception {
+    public ResponseEntity<String> alterBar(@PathVariable UUID id,
+                                           @RequestBody BarDto bar) throws Exception {
         try {
             barService.alterAtributos(id, ExtractEmail.extrairEmail(),bar);
         }catch (Exception e){
@@ -108,7 +117,8 @@ public class BarController {
 
 
     @PutMapping("avaliacao/{id}")
-    public ResponseEntity<Double> avaliacaoBar(@PathVariable UUID id, @RequestBody AvaliacaoDTO avaliacaoDTO) throws Exception {
+    public ResponseEntity<Double> avaliacaoBar(@PathVariable UUID id,
+                                               @RequestBody AvaliacaoDTO avaliacaoDTO) throws Exception {
         try {
             barService.setAvaliacao(id,avaliacaoDTO);
         }catch (Exception e){
@@ -122,9 +132,14 @@ public class BarController {
      */
 
     @PostMapping("location/{id}")
-    public ResponseEntity <EnderecoModel> enderecoBar(@PathVariable UUID id,@RequestBody EnderecoDTO enderecoDTO) throws Exception {
-            barService.setEndereco(id, enderecoDTO);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    public ResponseEntity <String> enderecoBar(@PathVariable UUID id,
+                                                      @RequestBody EnderecoDTO enderecoDTO) throws Exception {
+            try {
+                barService.setEndereco(id, enderecoDTO);
+            }catch (Exception e){
+                throw new Exception(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("bar salvo com sucesso");
     }
 
     @PostMapping ("/Upload")

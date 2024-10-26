@@ -6,6 +6,7 @@ import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.ROLE.TypeRole;
 import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
+import br.com.goobar_app.components.Validadores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.User;
@@ -49,8 +50,6 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    private UserModel userModel;
-
     public List<UserModel> getAllUsers() {
         return userRepository.findAll();
     }
@@ -60,12 +59,14 @@ public class UserService implements UserDetailsService {
             throw new Exception ("Username cannot be empty");
         if (userModel.getPassword() == null || userModel.getPassword().isEmpty())
             throw new Exception ("Password cannot be empty");
-        if (userModel.getEmail() == null || userModel.getEmail().isEmpty())
-            throw new Exception ("Email cannot be empty");
+        if (userModel.getEmail() == null || userModel.getEmail().isEmpty() || !Validadores.validaEmail(userModel.getEmail()))
+            throw new Exception ("Email invalido");
         if (userModel.getPassword().length() < 8)
             throw new Exception ("Password must be at least 8 characters");
         if (userModel.getTelefone() == null || userModel.getTelefone().isEmpty())
             throw new Exception ("Numero de telefone invalido");
+        if (userRepository.existsById(userModel.getId()))
+            throw new Exception("Algum erro aconteceu localizamos um usuario com esse id");
 
         userModel.setRole(TypeRole.USUARIO);
         userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
@@ -96,6 +97,7 @@ public class UserService implements UserDetailsService {
             if (alterUser.password()!= null){
                 userModel.setPassword(passwordEncoder.encode(alterUser.password()));
             }
+
             this.userRepository.save(userModel);
         }
         return "Usuario alterado com sucesso";
@@ -125,6 +127,6 @@ public class UserService implements UserDetailsService {
                 return "O bar já está nos favoritos";
             }
         }
-        return "Não foi possível salvar o bar";
+        throw new Exception("Não foi possivel adicionar o bar aos favoritos");
     }
 }

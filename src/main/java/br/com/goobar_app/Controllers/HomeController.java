@@ -12,6 +12,6 @@ public class HomeController {
 
     @GetMapping ("/home")
     public ResponseEntity<String> home() {
-        return ResponseEntity.ok("Hello World");
+        return ResponseEntity.ok("Autorização de cnpj realizada com sucesso");
     }
 }

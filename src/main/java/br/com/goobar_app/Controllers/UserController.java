@@ -56,6 +56,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserModel> register(@Valid @RequestBody RegisterDto registerDto) throws Exception {
+        userModel.setId(null);
         BeanUtils.copyProperties(registerDto, userModel);
 
         userService.saveAcount(userModel);
@@ -77,7 +78,7 @@ public class UserController {
     /*
         Deleta seu propio Usuario não tem como passar path via url ele apenas deleta o ususario que ja esta authenticado na sessão
      */
-    @DeleteMapping("DeleteUser")
+    @DeleteMapping("DeleteMyUser")
     public ResponseEntity<String> DeleteUser() throws Exception {
         userService.DeleteAcount(ExtractEmail.extrairEmail());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User Deleted");
@@ -134,9 +135,6 @@ public class UserController {
         imageService.uploadImage(file);
         return ResponseEntity.status(HttpStatus.CREATED).body("Imagem Salva");
     }
-
-
-
 
 
 

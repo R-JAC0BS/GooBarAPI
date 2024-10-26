@@ -14,6 +14,7 @@ public interface UserRepository extends GenericRepository <UserModel> {
 
     boolean existsByEmail(String email);
     boolean existsByEmailAndIdNot(String email, UUID id);
+    boolean existsById(UUID id);
 
 
     Optional<UserModel> findByEmail(String email);

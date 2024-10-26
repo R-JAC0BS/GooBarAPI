@@ -2,6 +2,7 @@ package br.com.goobar_app.service;
 
 
 import br.com.goobar_app.DTOS.AvaliacaoDTO;
+import br.com.goobar_app.DTOS.BarDto;
 import br.com.goobar_app.DTOS.EnderecoDTO;
 import br.com.goobar_app.Models.BarModel;
 import br.com.goobar_app.Models.EnderecoModel;
@@ -32,6 +33,8 @@ public class BarService {
     @Autowired
     private final EnderecoRepository enderecoRepository ;
 
+    BarModel modelBar = new BarModel();
+
     EnderecoModel enderecoModel = new EnderecoModel();
 
     public BarService(UserRepository userRepository, BarRepository barRepository, EnderecoRepository enderecoRepository) {
@@ -49,13 +52,12 @@ public class BarService {
         UserModel user = userRepository.findByEmail(email)                                               //Filtra o usuario
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado pelo email: " + email));
 
-        if (user.getBar() == null) {
-            user.setBar(new ArrayList<>());
-        }
+
         barModel.setUser(user);
         barModel.setEmail(email);
 
         List <BarModel> bar = user.getBar();
+
         user.setRole (TypeRole.CNPJ);
         bar.add (barModel);
         user.setBar(bar);
@@ -70,14 +72,11 @@ public class BarService {
     public String deleteBar(UUID deleteId, String email) {
         Optional<BarModel> bar = barRepository.findById(deleteId);
 
-
         if (bar.isPresent()) {
             UserModel user = bar.get().getUser();
             if (user.getEmail().equals(email)) {
-                barRepository.delete(bar.get());
-                user.setBar(null);
-                user.setRole(TypeRole.USUARIO);
-                userRepository.save(user);
+                barRepository.deleteById(bar.get().getId());
+
             }else {
                 throw new RuntimeException("Usuario não é dono do bar");
             }
@@ -94,44 +93,43 @@ public class BarService {
     @Transactional
     public String alterAtributos(UUID idalter,
                                  String email,
-                                 BarModel barModel) throws Exception {
-        Optional<BarModel> bar = barRepository.findById(idalter);
-        if (bar.isPresent()) {
-            UserModel user = bar.get().getUser();
-            if (user.getEmail().equals(email)) {
-                BarModel barsave = bar.get(); // Obtém o bar existente
-                if (barModel.getDescricao() != null) {
-                    barsave.setDescricao(barModel.getDescricao());
-                }
-                if (barModel.getNomebar() != null) {
-                    barsave.setNomebar(barModel.getNomebar());
-                }
-                if (barModel.getArlivre() != null) {
-                    barsave.setArlivre(barModel.getArlivre());
-                }
-                if (barModel.getTv() != null) {
-                    barsave.setTv(barModel.getTv());
-                }
-                if (barModel.getWifi() != null) {
-                    barsave.setWifi(barModel.getWifi());
-                }
-                if (barModel.getPraia() != null) {
-                    barsave.setPraia(barModel.getPraia());
-                }
-                if (barModel.getArcondicionado() != null) {
-                    barsave.setArcondicionado(barModel.getArcondicionado());
-                }
-                if (barModel.getEstacionamento() != null) {
-                    barsave.setEstacionamento(barModel.getEstacionamento());
-                }
+                                 BarDto barModel) throws Exception {
+        BarModel bar = this.barRepository.findById(idalter).orElseThrow(() -> new Exception("Usuario não encontrado"));
 
-                barRepository.save(barsave); // Salva as alterações no banco de dados
-            } else {
-                throw new Exception("Usuario não é proprietário do bar");
+        UserModel user = bar.getUser();
+        if (!user.getEmail().equals(email)){
+                new Exception("usuario não é propietario do bar");
             }
-        } else {
-            throw new Exception("Bar não encontrado");
-        }
+            // Obtém o bar existente
+        if (bar.getDescricao() != null) {
+                    bar.setDescricao(barModel.descricao());
+                }
+        if (bar.getNomebar() != null) {
+                    bar.setNomebar(barModel.nomebar());
+                }
+        if (bar.getArlivre() != null) {
+                    bar.setArlivre(barModel.arlivre());
+                }
+        if (bar.getTv() != null) {
+                    bar.setTv(barModel.tv());
+                }
+        if (bar.getWifi() != null) {
+                    bar.setWifi(barModel.wifi());
+                }
+        if (bar.getPraia() != null) {
+                    bar.setPraia(barModel.praia());
+                }
+        if (bar.getArcondicionado() != null) {
+                    bar.setArcondicionado(barModel.arcondicionado());
+                }
+        if (bar.getEstacionamento() != null) {
+                    bar.setEstacionamento(barModel.estacionamento());
+                }
+        if (bar.getMesabilhar() != null)
+                    bar.setMesabilhar(barModel.mesabilhar());
+
+
+        barRepository.save(bar);
         return "Bar alterado com sucesso!";
     }
 
@@ -151,7 +149,7 @@ public class BarService {
             barRepository.save(barNota);
 
         }else {
-            return "não foi possivel realizar avalicao";
+            throw new Exception("Não foi possivel enviar uma nota");
         }
 
 
@@ -173,7 +171,7 @@ public class BarService {
             enderecoModel.setLatitude(enderecoDTO.latitude());
             enderecoModel.setLongitude(enderecoDTO.
                     longitude());
-            enderecoModel.setBarModel(bar); // Definindo a referência ao BarModel
+            enderecoModel.setBarModel(bar);
 
             // Salvar o EnderecoModel
             enderecoRepository.save(enderecoModel);
@@ -182,7 +180,7 @@ public class BarService {
             bar.setEndereco(enderecoModel);
             barRepository.save(bar);
 
-            return "Endereço atualizado com sucesso!";
+            return "Endereço salvo com sucesso!";
         }
 
         throw new Exception("Bar não encontrado");

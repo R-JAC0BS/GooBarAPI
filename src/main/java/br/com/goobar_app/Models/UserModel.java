@@ -2,6 +2,7 @@ package br.com.goobar_app.Models;
 
 
 import br.com.goobar_app.ROLE.TypeRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,9 +33,11 @@ public class UserModel extends GenericModel implements UserDetails {
     @Column()
     private String imagemUrl;
 
+
     @Column (unique = true, nullable = false, length = 100)
     private String password;
 
+    @JsonIgnore
     @Enumerated(EnumType.STRING)
     private TypeRole role;
 
@@ -49,7 +52,7 @@ public class UserModel extends GenericModel implements UserDetails {
     private List<BarModel> barFavoritos;
 
 
-    @OneToMany (mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany (mappedBy = "user", cascade = CascadeType.PERSIST,orphanRemoval = true)
     @JsonManagedReference
     private List<BarModel> bar;
     @Override
