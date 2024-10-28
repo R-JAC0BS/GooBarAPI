@@ -112,27 +112,36 @@ End point {{BASE_URL}}/auth/allusers não é pra ser utilizado
 </Card>
 >#### PROCURAR PELOS FAVORITOS<Icon icon="material-outline-trending_flat"/> GET
 <Card title="{{BASE_URL}}/Bar/bar-image/" >
+  
     Endpoint para retornar a imagem do bar
     
-   <TipInfo>Esse end point precisa ser testado no front para garantir que vai funcionar corretamente</TipInfo>
+   <TipInfo>
+     
+   Esse end point precisa ser testado no front para garantir que vai funcionar corretamente
+   
+   </TipInfo>
 
 </Card>
 >#### PROCURAR PELOS POPULARES <Icon icon="material-outline-trending_flat"/> GET
 <Card title="{{BASE_URL}}/Bar/populares" >
+  
     Endpoint para retornar os bares populares
      <TipInfo>A FILTRAGEM PADRAO É BARES COM AVALIACAO MAIOR QUE 3 POREM PODE SER ALTERADA USANDO ?nota=4 OU ALGUM OUTRO NUMERO</TipInfo>
 </Card>
 >#### DELETAR ALGUM BAR <Icon icon="material-outline-trending_flat"/> DELETE
 <Card title="{{BASE_URL}}/Bar/populares" >
+  
     Endpoint para deletar o bar pelo id
      <TipInfo>O backend faz verificacao se o usuario da req é o dono</TipInfo>
 </Card>
 
 :::info[]
+
     Alguns endpoint poderao ser alterados
 :::
 
 :::caution[]
+
     Se forem fazer alguma alteração no codigo não dem commit para branch main, façam commit  para branch testeV1 e anotem a alteração kk
     
     a main vai ser utilizada para deploy
