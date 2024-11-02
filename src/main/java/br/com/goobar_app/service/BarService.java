@@ -52,7 +52,6 @@ public class BarService {
         UserModel user = userRepository.findByEmail(email)                                               //Filtra o usuario
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado pelo email: " + email));
 
-
         barModel.setUser(user);
         barModel.setEmail(email);
 
@@ -184,5 +183,15 @@ public class BarService {
         }
 
         throw new Exception("Bar não encontrado");
+    }
+
+    public List<BarModel> GetFavoritos (String email) throws Exception {
+        Optional<UserModel> user = userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            UserModel userModel = user.get();
+            return List.copyOf(userModel.getBarFavoritos());
+        }else{
+            throw new Exception("não foi possivel localizar uma favorito");
+        }
     }
 }

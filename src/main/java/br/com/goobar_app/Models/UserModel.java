@@ -34,6 +34,8 @@ public class UserModel extends GenericModel implements UserDetails {
     private String imagemUrl;
 
 
+
+    @JsonIgnore
     @Column (unique = true, nullable = false, length = 100)
     private String password;
 
@@ -49,17 +51,21 @@ public class UserModel extends GenericModel implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "bar_id")
     )
+    @JsonIgnore
     private List<BarModel> barFavoritos;
 
 
     @OneToMany (mappedBy = "user", cascade = CascadeType.PERSIST,orphanRemoval = true)
     @JsonManagedReference
     private List<BarModel> bar;
+
+    @JsonIgnore
     @Override
     public String toString() {
         return this.email;
     }
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }

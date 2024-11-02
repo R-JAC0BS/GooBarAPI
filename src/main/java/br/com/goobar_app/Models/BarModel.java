@@ -47,7 +47,7 @@ public class BarModel extends GenericModel {
     private Boolean tv = false;
     @Column()
     private Boolean arcondicionado = false;
-    @Column()
+    @Column(name = "estacionamento")
     private Boolean estacionamento = false;
     @Column()
     private Boolean mesabilhar = false;

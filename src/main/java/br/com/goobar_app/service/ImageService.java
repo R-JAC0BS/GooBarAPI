@@ -12,6 +12,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,13 @@ public class ImageService {
     @Autowired
     BarRepository barRepository;
 
+    public final CloudNaryService cloudNaryService;
+    private final BarModel barModel = new BarModel();
+
+    public ImageService(CloudNaryService cloudNaryService) {
+        this.cloudNaryService = cloudNaryService;
+    }
+
     public Resource getImage() throws Exception {
         Optional<UserModel> userModel = userRepository.findByEmail(ExtractEmail.extrairEmail());
         UserModel user = userModel.get();
@@ -40,68 +48,42 @@ public class ImageService {
         }
     }
 
-    public String uploadImage(MultipartFile file) throws Exception {
-        try {
-            Optional<UserModel> userModel = userRepository.findByEmail(ExtractEmail.extrairEmail());
-            UserModel user = userModel.get();
-
-            String folder = "uploads/UserImage/";
-            String fileName = "user_" + user.getEmail() + "_" + file.getOriginalFilename();
-            Path directory = Paths.get(folder);
-            if (Files.notExists(directory)) {
-                Files.createDirectories(directory);
-            }
-
-            Path path = directory.resolve(fileName);
-            Files.write(path, file.getBytes());
-
-            user.setImagemUrl(path.toString());
-            userRepository.save(user);
-            return userModel.get().getImagemUrl();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        return null;
+    public void uploadImage(MultipartFile file) throws Exception {
+        userRepository.findByEmail(ExtractEmail.extrairEmail()).ifPresent(
+                user -> {
+                    try{
+                        String userimage = cloudNaryService.upload(file);
+                        user.setImagemUrl(userimage);
+                        userRepository.save(user);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
     }
 
 
-    public String uploadImageBar(MultipartFile file) throws Exception {
-        try {
-            Optional<UserModel> userModel = userRepository.findByEmail(ExtractEmail.extrairEmail());
-            UserModel user = userModel.get();
 
-            String folderImage = "uploads/BarImage/";
-            String fileName = "bar_" + user.getEmail() + "_" + file.getOriginalFilename();
-            Path directory = Paths.get(folderImage);
-            if (Files.notExists(directory)) {
-                Files.createDirectories(directory);
-            }
 
-            Path path = directory.resolve(fileName);
-            Files.write(path, file.getBytes());
 
-            user.setImagemUrl(path.toString());
-            userRepository.save(user);
-            return userModel.get().getImagemUrl();
-        }catch (Exception e){
-            e.printStackTrace();
+    public void uploadImageBar(MultipartFile file, UUID id) throws Exception {
+         barRepository.findById(id).ifPresent(bar -> {
+             try {
+                 String image = cloudNaryService.upload(file);
+                 bar.setImagemurl(image);
+                 barRepository.save(bar);
+
+             } catch (Exception e) {
+                 throw new RuntimeException(e);
+             }});}
+
+
+    public String getImageBar(UUID id) throws Exception {
+        if (id == null){
+            throw new Exception("Não existe nenhuma imagem associada ao bar");
         }
-
-
-        return null;
-    }
-
-    public Resource getImageBar(UUID id) throws Exception {
         Optional<BarModel> barModel = barRepository.findById(id);
-        BarModel user = barModel.get();
-        try {
-            Path path = Paths.get(user.getImagemurl());
-            Resource image = new UrlResource(path.toUri());
-            return image;
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+        String url = barModel.get().getImagemurl();
+        return url;
+}
 }

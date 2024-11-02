@@ -146,11 +146,6 @@ public class UserController {
 
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> exception(Exception e) {
-        String cleanMessage = e.getMessage().replaceAll("[\\r\\n]", "");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(cleanMessage);
-    }
 
 
 

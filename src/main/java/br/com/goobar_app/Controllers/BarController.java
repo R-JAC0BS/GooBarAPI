@@ -13,13 +13,13 @@ import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.ExtractEmail;
-import br.com.goobar_app.service.BarService;
-import br.com.goobar_app.service.ComentarioService;
-import br.com.goobar_app.service.ImageService;
-import br.com.goobar_app.service.UserService;
+import br.com.goobar_app.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,23 +36,18 @@ import java.util.UUID;
 @RestController
 @RequestMapping("Bar")
 public class BarController {
-    @Autowired
+
     public final BarService barService;
-    @Autowired
     public final UserDetailsService userDetailsService;
-    @Autowired
     public  final UserService userService;
     public static final BarModel barModel = new BarModel();
+    public final CloudNaryService cloudNaryService;
     public final ImageService imageService;
-    @Autowired
     public final UserRepository userRepository;
-    @Autowired
     private final BarRepository barRepository;
-
-    @Autowired
     public final ComentarioService comentarioService;
 
-    public BarController(BarService barService, UserDetailsService userDetailsService, UserService userService,
+    public BarController(BarService barService, UserDetailsService userDetailsService, UserService userService, CloudNaryService cloudNaryService,
                          ImageService imageService, UserRepository userRepository,
                          BarRepository barRepository,
                          ComentarioService comentarioService) {
@@ -60,6 +55,7 @@ public class BarController {
         this.barService = barService;
         this.userDetailsService = userDetailsService;
         this.userService = userService;
+        this.cloudNaryService = cloudNaryService;
         this.imageService = imageService;
         this.userRepository = userRepository;
         this.barRepository = barRepository;
@@ -102,8 +98,7 @@ public class BarController {
         End point para fazer alteração nos atributos do produto
      */
     @PutMapping("alter/{id}")
-    public ResponseEntity<String> alterBar(@PathVariable UUID id,
-                                           @RequestBody BarDto bar) throws Exception {
+    public ResponseEntity<String> alterBar(@PathVariable UUID id, @RequestBody BarDto bar) throws Exception {
         try {
             barService.alterAtributos(id, ExtractEmail.extrairEmail(),bar);
         }catch (Exception e){
@@ -142,25 +137,39 @@ public class BarController {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("bar salvo com sucesso");
     }
 
-    @PostMapping ("/Upload")
-    public ResponseEntity <String> upload (@RequestParam("file") MultipartFile file ) throws Exception {
-        imageService.uploadImageBar(file);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Imagem bar salva");
+
+    /*
+        Metodo responsavel por coletar o id e a imagem e enviar para a camada imageService
+     */
+    @PostMapping ("/Upload/{id}")
+    public ResponseEntity <String> upload (@RequestParam("file") MultipartFile file
+                                           ,@PathVariable UUID id
+
+                                            ) throws Exception {
+        imageService.uploadImageBar(file, id);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Imagem bar salva com sucesso");
 
     }
 
     @GetMapping("/bar-image/{id}")
-    public ResponseEntity<Resource> getUserProfileImage(@PathVariable UUID id) throws Exception {
-        Resource image = imageService.getImageBar(id);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+    public ResponseEntity<String> getUserProfileImage(@PathVariable UUID id) throws Exception {
+        return ResponseEntity.status(HttpStatus.FOUND).body(imageService.getImageBar(id));
 
     }
 
 
+    @GetMapping("/MyBar")
+    public ResponseEntity<List> myBar() throws Exception {
+        Optional <UserModel> bar = userRepository.findByEmail(ExtractEmail.extrairEmail());
+        return ResponseEntity.status(HttpStatus.OK).body(bar.get().getBar());
+    }
+
 
     @GetMapping("/findBar")
-    public List<BarModel> getUsers() {
-        return barRepository.findAll();
+    public ResponseEntity <Page <BarModel>> getUsers() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page <BarModel> bars = barRepository.findAll(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(bars);
     }
 
 
@@ -173,11 +182,25 @@ public class BarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(comentario.toString());
     }
 
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> exception(Exception e) {
-        String cleanMessage = e.getMessage().replaceAll("[\\r\\n]", "");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(cleanMessage);
+    @GetMapping ("/favoritos")
+    public List<BarModel> getFavoritos() throws Exception {
+        return barService.GetFavoritos(ExtractEmail.extrairEmail());
     }
 
+    @GetMapping("/barSelect/{id}")
+    public ResponseEntity<BarModel> barSelect(@PathVariable UUID id) throws Exception {
+        BarModel barModel1 = barRepository.findById(id).orElseThrow(
+                () -> new Exception("não foi possivel localizar o bar")
+        );
+        return ResponseEntity.status(HttpStatus.OK).body(barModel1);
+    }
+
+    @GetMapping ("/populares")
+    public ResponseEntity <Page<BarModel>> getPopulares(
+            @RequestParam (required = false,defaultValue = "2.0") Double nota
+    ) throws Exception {
+        Pageable peage = PageRequest.of(0,40);
+        Page <BarModel> bar = barRepository.findByAvaliacaoGreaterThan(nota, peage);
+        return ResponseEntity.status(HttpStatus.OK).body(bar);
+    }
 }
