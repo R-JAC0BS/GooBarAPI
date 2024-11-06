@@ -1,12 +1,22 @@
 package br.com.goobar_app.service;
 
+import br.com.goobar_app.CustomException.UserException;
+import br.com.goobar_app.CustomException.UserStatus;
+import br.com.goobar_app.DTOS.AlterPasswordDto;
 import br.com.goobar_app.DTOS.AlterUser;
+import br.com.goobar_app.DTOS.RegisterDto;
 import br.com.goobar_app.Models.BarModel;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.ROLE.TypeRole;
+import br.com.goobar_app.Strategy.AccountValidation;
+import br.com.goobar_app.Strategy.Validation.AlterPassWord;
+import br.com.goobar_app.Strategy.Validation.AlterUserValidationn;
 import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
+import br.com.goobar_app.components.ExtractEmail;
 import br.com.goobar_app.components.Validadores;
+import lombok.SneakyThrows;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.User;
@@ -30,82 +40,64 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private final UserRepository userRepository;
-
-
     @Autowired
     private BarRepository barRepository;
+    private final List <AccountValidation> accountValidations;
+    @Autowired
+    private PasswordEncoder passwordEncoder ;
+
+    public final  AlterPassWord alterPassWord;
+    private final UserModel userModel = new UserModel();
+    AlterUserValidationn validation = new AlterUserValidationn();
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-
         return this.userRepository.findByEmail(email)
                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o e-mail: " + email));
     }
 
-    @Autowired
-    private PasswordEncoder passwordEncoder ;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, List<AccountValidation> accountValidations, PasswordEncoder passwordEncoder, AlterPassWord alterPassWord) {
         this.userRepository = userRepository;
+        this.accountValidations = accountValidations;
         this.passwordEncoder = passwordEncoder;
+        this.alterPassWord = alterPassWord;
     }
 
-    public List<UserModel> getAllUsers() {
-        return userRepository.findAll();
-    }
 
-    public UserModel saveAcount(UserModel userModel)throws Exception{
-        if (userModel.getUsername() == null || userModel.getUsername().isEmpty())
-            throw new Exception ("Username cannot be empty");
-        if (userModel.getPassword() == null || userModel.getPassword().isEmpty())
-            throw new Exception ("Password cannot be empty");
-        if (userModel.getEmail() == null || userModel.getEmail().isEmpty() || !Validadores.validaEmail(userModel.getEmail()))
-            throw new Exception ("Email invalido");
-        if (userModel.getPassword().length() < 8)
-            throw new Exception ("Password must be at least 8 characters");
-        if (userModel.getTelefone() == null || userModel.getTelefone().isEmpty())
-            throw new Exception ("Numero de telefone invalido");
-        if (userRepository.existsById(userModel.getId()))
-            throw new Exception("Algum erro aconteceu localizamos um usuario com esse id");
+    public UserModel saveAcount(RegisterDto registerDto)throws Exception{
+        BeanUtils.copyProperties(registerDto, userModel);
+        accountValidations.forEach(valida -> valida.execute(registerDto));
 
         userModel.setRole(TypeRole.USUARIO);
         userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
         return userRepository.save(userModel);
     }
 
-    public String DeleteAcount (String email)throws Exception{
+    public void DeleteAcount (String email)throws Exception{
             Optional<UserModel> user = userRepository.findByEmail(email);
             user.ifPresent(model -> userRepository.delete(model));
-
-      return "Usuario deletado com sucesso";
     }
 
 
-    public String AlterAcount (String email, AlterUser alterUser) throws Exception{
+    public void AlterAcount(String email, AlterUser alterUser) throws Exception {
         Optional<UserModel> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
             UserModel userModel = user.get();
-            if (alterUser.email()!= null){
-                userModel.setEmail(alterUser.email());
-            }
-            if (alterUser.username()!= null){
-                userModel.setUsername(alterUser.username());
-            }
-            if (alterUser.telefone()!=null){
-                userModel.setTelefone(alterUser.telefone());
-            }
-            if (alterUser.password()!= null){
-                userModel.setPassword(passwordEncoder.encode(alterUser.password()));
-            }
+            validation.AlterUser(alterUser);
+            userModel.setUsername(alterUser.username());
+            userModel.setEmail(alterUser.email());
+            userModel.setTelefone(alterUser.telefone());
 
             this.userRepository.save(userModel);
+        } else {
+            throw new UserException(UserStatus.USER_NOT_FOUND);
         }
-        return "Usuario alterado com sucesso";
     }
 
 
-
-    public String FavoriteBar(UUID id, String email) throws Exception {
+    public void FavoriteBar(UUID id, String email) throws Exception {
         Optional<BarModel> barModelOptional = barRepository.findById(id);
         Optional<UserModel> userOptional = userRepository.findByEmail(email);
 
@@ -122,11 +114,18 @@ public class UserService implements UserDetailsService {
                 barRepository.save(barModel);
                 userRepository.save(userModel);
 
-                return "Bar favorito atualizado com sucesso";
+
             } else {
-                return "O bar já está nos favoritos";
+                throw new UserException(UserStatus.USER_ERROR_FAVORITE);
             }
         }
-        throw new Exception("Não foi possivel adicionar o bar aos favoritos");
+
+    }
+
+    @SneakyThrows
+    public void UserAlterPassWord (AlterPasswordDto alter){
+        Optional <UserModel> user = userRepository.findByEmail(ExtractEmail.extrairEmail());
+        alterPassWord.PassWordValidation(alter, user.get());
+        user.get().setPassword(passwordEncoder.encode(alter.newpassword()));
     }
 }

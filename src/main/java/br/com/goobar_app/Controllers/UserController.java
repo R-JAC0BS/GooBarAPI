@@ -2,19 +2,18 @@ package br.com.goobar_app.Controllers;
 
 
 import br.com.goobar_app.Config.JwtUtils;
+import br.com.goobar_app.CustomException.UserStatus;
+import br.com.goobar_app.DTOS.AlterPasswordDto;
 import br.com.goobar_app.DTOS.AlterUser;
 import br.com.goobar_app.DTOS.LoginDTOS;
 import br.com.goobar_app.DTOS.RegisterDto;
 import br.com.goobar_app.Models.UserModel;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.ExtractEmail;
-import br.com.goobar_app.service.BarService;
 import br.com.goobar_app.service.ImageService;
 import br.com.goobar_app.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,13 +50,11 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<UserModel> register(@Valid @RequestBody RegisterDto registerDto) throws Exception {
+    public ResponseEntity<RegisterDto> register(@Valid @RequestBody RegisterDto registerDto) throws Exception {
         userModel.setId(null);
-        BeanUtils.copyProperties(registerDto, userModel);
+        userService.saveAcount(registerDto);
 
-        userService.saveAcount(userModel);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registerDto);
 
     }
 
@@ -90,10 +83,9 @@ public class UserController {
      */
 
     @GetMapping("FindUser")
-    public ResponseEntity<Optional<UserModel>> FindUser(RegisterDto registerDto) throws Exception {
+    public ResponseEntity<UserModel> FindUser() throws Exception {
         Optional<UserModel> user = userRepository.findByEmail(ExtractEmail.extrairEmail());
-        BeanUtils.copyProperties(user, registerDto);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(user.get());
     }
 
     @GetMapping("allusers")
@@ -146,6 +138,12 @@ public class UserController {
 
     }
 
+
+    @PutMapping ("/AlterPassword")
+    public ResponseEntity <String> alterUserPassWord (@RequestBody AlterPasswordDto alterPasswordDto){
+        userService.UserAlterPassWord(alterPasswordDto);
+        return ResponseEntity.status(HttpStatus.OK).body(UserStatus.USER_ALTER_SUCEFUL.toString());
+    }
 
 
 

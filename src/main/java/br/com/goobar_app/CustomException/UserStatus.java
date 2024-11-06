@@ -1,0 +1,32 @@
+package br.com.goobar_app.CustomException;
+
+
+import org.springframework.stereotype.Component;
+
+
+public enum UserStatus {
+
+    USER_NOT_FOUND ("USUARIO NÃO ENCONTRADO"),
+    USER_NOT_FOUND_BY_EMAIL ("USUARIO NÃO ENCONTRADO PELO EMAIL"),
+    USER_ERROR_DELETE ("OCORREU UM ERRO AO DELETAR USUAIRO"),
+    USER_REGISTER_ERROR ("NÃO FOI POSSIVEL REGISTRAR O USUARIO"),
+    USER_LOGIN_ERROR ("NÃO FOI POSSIVEL REALIZAR O LOGIN"),
+    USER_IMAGE_SAVE ("NÃO FOI POSSIVEL SALVAR A IMAGEM DE USUARIO"),
+    USER_ERROR_FAVORITE ("NÃO FOI POSSIVEL ADICIONAR O BAR AOS FAVORITOS"),
+    USER_EMAIL_VALIDATE ("EMAIL INVALIDO"),
+    USER_PASSWORD_VALIDATE ("PASSWORD INVALIDO"),
+    USER_TELEFONE_VALIDATE ("TELEFONE INVALIDO"),
+    USER_USERNAME_VALIDATE ("USERNAME INVALIDO"),
+    USER_ALTER_SUCEFUL ("USUARIO ALTERADO COM SUCESSO");
+
+    private final String message;
+
+    UserStatus(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString () {
+        return message;
+    }
+}

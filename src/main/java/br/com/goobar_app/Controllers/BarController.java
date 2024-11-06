@@ -1,6 +1,8 @@
 package br.com.goobar_app.Controllers;
 
 
+import br.com.goobar_app.CustomException.BarException;
+import br.com.goobar_app.CustomException.BarStatus;
 import br.com.goobar_app.DTOS.AvaliacaoDTO;
 import br.com.goobar_app.DTOS.BarDto;
 import br.com.goobar_app.DTOS.ComentarioDTO;
@@ -82,16 +84,17 @@ public class BarController {
      */
 
     @DeleteMapping("BarDelete/{DeleteId}")
-    public String deleteBar(@PathVariable UUID DeleteId) {
+    public ResponseEntity<String> deleteBar(@PathVariable UUID DeleteId) throws BarException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getPrincipal() instanceof Optional) {
             Optional<UserModel> optionalUser = (Optional<UserModel>) authentication.getPrincipal();
-            return barService.deleteBar(DeleteId,optionalUser.map(UserModel::getEmail).orElse("Email Não encontrado"));
+            barService.deleteBar(DeleteId,optionalUser.map(UserModel::getEmail).orElse("Email Não encontrado"));
+            return ResponseEntity.status(HttpStatus.OK).body("Bar deletado com sucesso");
 
         }
 
+        return ResponseEntity.status(HttpStatus.NOT_EXTENDED).body("Não foi possivel deletar o bar");
 
-        return "Bar deletado com sucesso ";
     }
 
     /*
@@ -112,14 +115,14 @@ public class BarController {
 
 
     @PutMapping("avaliacao/{id}")
-    public ResponseEntity<Double> avaliacaoBar(@PathVariable UUID id,
+    public ResponseEntity<String> avaliacaoBar(@PathVariable UUID id,
                                                @RequestBody AvaliacaoDTO avaliacaoDTO) throws Exception {
         try {
             barService.setAvaliacao(id,avaliacaoDTO);
         }catch (Exception e){
             throw new Exception(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(BarStatus.BAR_AVALAIATION.toString());
     }
 
     /*

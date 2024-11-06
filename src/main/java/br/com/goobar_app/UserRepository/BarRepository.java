@@ -9,9 +9,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface BarRepository extends JpaRepository<BarModel,UUID> {
+
+
     BarModel findByEmail (String email);
+
     void deleteById(UUID id);
+
     Page <BarModel> findByAvaliacaoGreaterThan(Double avaliacao,Pageable pageable);
+
     Page<BarModel> findAll(Pageable pageable);
 
     Optional<BarModel> findById(UUID id);

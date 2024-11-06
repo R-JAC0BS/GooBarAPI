@@ -16,17 +16,18 @@ import java.util.Map;
 @Service
 public class CloudNaryService {
 
-    private Cloudinary cloudinary;
+    private static final long MAX_IMAGE = 4 * 1024 * 1024;
+
+    private final Cloudinary cloudinary;
 
     @Autowired
-    public CloudNaryService(Cloudinary cloudinary) {
+    private CloudNaryService(Cloudinary cloudinary) {
         this.cloudinary = cloudinary;
     }
 
-    public Map <String,Object> uploadImage (File file) throws IOException {
+    private Map <String,Object> uploadImage (File file) throws IOException {
         return cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
     }
-
 
     /*
         Metodo para salvar e retornar a url salva utilizando Cloudnary
@@ -34,6 +35,7 @@ public class CloudNaryService {
      */
     public String upload(MultipartFile file) throws IOException {
         File tempFile = File.createTempFile("CloudNaryService", file.getOriginalFilename());
+        max_size(file);
         file.transferTo(tempFile);
         try {
             Map<String, Object> uploadResult = uploadImage(tempFile);
@@ -41,6 +43,12 @@ public class CloudNaryService {
             return (String) uploadResult.get("secure_url");
         } finally {
             tempFile.delete();
+        }
+    }
+    private void max_size (MultipartFile file) throws IOException {
+        final long size = file.getSize();
+        if (size > MAX_IMAGE) {
+            throw new IOException("O arquivo deve ser menor que 4mb");
         }
     }
 }

@@ -1,6 +1,8 @@
 package br.com.goobar_app.service;
 
 
+import br.com.goobar_app.CustomException.BarException;
+import br.com.goobar_app.CustomException.BarStatus;
 import br.com.goobar_app.DTOS.AvaliacaoDTO;
 import br.com.goobar_app.DTOS.BarDto;
 import br.com.goobar_app.DTOS.EnderecoDTO;
@@ -12,6 +14,7 @@ import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.EnderecoRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.Avalicao;
+import br.com.goobar_app.components.GlobalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,10 +36,6 @@ public class BarService {
     @Autowired
     private final EnderecoRepository enderecoRepository ;
 
-    BarModel modelBar = new BarModel();
-
-    EnderecoModel enderecoModel = new EnderecoModel();
-
     public BarService(UserRepository userRepository, BarRepository barRepository, EnderecoRepository enderecoRepository) {
         this.userRepository = userRepository;
         this.barRepository = barRepository;
@@ -47,10 +46,10 @@ public class BarService {
             Classe responsavel por salvar o Bar no usuario correspondente
          */
     @Transactional
-    public BarModel setUserBar(String email, BarModel barModel ) {
+    public BarModel setUserBar(String email, BarModel barModel ) throws Exception, BarException {
 
         UserModel user = userRepository.findByEmail(email)                                               //Filtra o usuario
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado pelo email: " + email));
+                .orElseThrow(() ->  new BarException(BarStatus.LOCALIZATION_BAR_ERROR));
 
         barModel.setUser(user);
         barModel.setEmail(email);
@@ -68,21 +67,21 @@ public class BarService {
      */
 
     @Transactional
-    public String deleteBar(UUID deleteId, String email) {
+    public void deleteBar(UUID deleteId, String email) throws BarException {
         Optional<BarModel> bar = barRepository.findById(deleteId);
+
 
         if (bar.isPresent()) {
             UserModel user = bar.get().getUser();
             if (user.getEmail().equals(email)) {
+                if (user.getBar() == null || user.getBar().isEmpty()) {
+                    user.setRole (TypeRole.USUARIO);
+                }
                 barRepository.deleteById(bar.get().getId());
 
             }else {
-                throw new RuntimeException("Usuario não é dono do bar");
+                throw new BarException(BarStatus.USER_OR_BAR_NOT_FOUND);
             }
-
-            return "Bar deletado com sucesso!";
-        } else {
-            return "Bar não encontrado!";
         }
 
     }
@@ -90,14 +89,14 @@ public class BarService {
     Altera as configuração do bar
  */
     @Transactional
-    public String alterAtributos(UUID idalter,
+    public void alterAtributos(UUID idalter,
                                  String email,
-                                 BarDto barModel) throws Exception {
-        BarModel bar = this.barRepository.findById(idalter).orElseThrow(() -> new Exception("Usuario não encontrado"));
+                                 BarDto barModel) throws Exception, BarException {
+        BarModel bar = this.barRepository.findById(idalter).orElseThrow(() -> new BarException(BarStatus.USER_NOT_FOUND));
 
         UserModel user = bar.getUser();
         if (!user.getEmail().equals(email)){
-                new Exception("usuario não é propietario do bar");
+                throw new BarException(BarStatus.USER_OR_BAR_NOT_FOUND);
             }
             // Obtém o bar existente
         if (bar.getDescricao() != null) {
@@ -126,15 +125,12 @@ public class BarService {
                 }
         if (bar.getMesabilhar() != null)
                     bar.setMesabilhar(barModel.mesabilhar());
-
-
         barRepository.save(bar);
-        return "Bar alterado com sucesso!";
     }
 
 
 
-    public String setAvaliacao (UUID id, AvaliacaoDTO avaliacaoDTO) throws Exception{
+    public String setAvaliacao (UUID id, AvaliacaoDTO avaliacaoDTO) throws BarException {
         Optional<BarModel> bar = barRepository.findById(id);
 
         if (bar.isPresent()) {
@@ -148,28 +144,25 @@ public class BarService {
             barRepository.save(barNota);
 
         }else {
-            throw new Exception("Não foi possivel enviar uma nota");
+            throw new BarException(BarStatus.AVALIATION_NOT_SEND);
         }
-
-
-        return "Nota lançada com sucesso";
+        return "tudo certo";
     }
 
 
     @Transactional
-    public String setEndereco(UUID id, EnderecoDTO enderecoDTO) throws Exception {
+    public String setEndereco(UUID id, EnderecoDTO enderecoDTO) throws BarException{
         Optional<BarModel> barOptional = barRepository.findById(id);
 
         if (enderecoDTO.latitude() == null || enderecoDTO.longitude() == null)
-            throw new Exception("Bar precisa de uma localizacao");
+            throw new BarException(BarStatus.LOCALIZATION_BAR_ERROR);
 
         if (barOptional.isPresent()) {
             BarModel bar = barOptional.get();
 
             EnderecoModel enderecoModel = new EnderecoModel();
             enderecoModel.setLatitude(enderecoDTO.latitude());
-            enderecoModel.setLongitude(enderecoDTO.
-                    longitude());
+            enderecoModel.setLongitude(enderecoDTO.longitude());
             enderecoModel.setBarModel(bar);
 
             // Salvar o EnderecoModel
@@ -178,20 +171,18 @@ public class BarService {
             // Salvar o BarModel se a relação for um-para-um
             bar.setEndereco(enderecoModel);
             barRepository.save(bar);
-
-            return "Endereço salvo com sucesso!";
         }
 
-        throw new Exception("Bar não encontrado");
+        throw new BarException(BarStatus.BAR_NOT_FOUND);
     }
 
-    public List<BarModel> GetFavoritos (String email) throws Exception {
+    public List<BarModel> GetFavoritos (String email) throws BarException {
         Optional<UserModel> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
             UserModel userModel = user.get();
             return List.copyOf(userModel.getBarFavoritos());
         }else{
-            throw new Exception("não foi possivel localizar uma favorito");
+            throw new BarException(BarStatus.FAVORITE_BAR_SAVE);
         }
     }
 }
