@@ -46,7 +46,7 @@ public class BarService {
             Classe responsavel por salvar o Bar no usuario correspondente
          */
     @Transactional
-    public BarModel setUserBar(String email, BarModel barModel ) throws Exception, BarException {
+    public BarModel setUserBar(String email, BarModel barModel ) throws  BarException {
 
         UserModel user = userRepository.findByEmail(email)                                               //Filtra o usuario
                 .orElseThrow(() ->  new BarException(BarStatus.LOCALIZATION_BAR_ERROR));

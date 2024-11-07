@@ -48,18 +48,23 @@ public class ImageService {
         }
     }
 
-    public void uploadImage(MultipartFile file) throws Exception {
-        userRepository.findByEmail(ExtractEmail.extrairEmail()).ifPresent(
+    public String uploadImage(MultipartFile file) throws Exception {
+        String email = ExtractEmail.extrairEmail();
+        userRepository.findByEmail(email).ifPresent(
                 user -> {
                     try{
-                        String userimage = cloudNaryService.upload(file);
-                        user.setImagemUrl(userimage);
+                        String image = cloudNaryService.upload(file);
+
+                        user.setImagemUrl(image);
                         userRepository.save(user);
+
+
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
         );
+        return email;
     }
 
 

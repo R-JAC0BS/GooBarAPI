@@ -26,6 +26,7 @@ public class ConfigSecurity {
                 .authorizeRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "auth/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "Bar/findBar").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "auth/Upload/").permitAll()
                                 .requestMatchers("Bar/").authenticated()
                                 .requestMatchers(HttpMethod.POST, "Bar/location/").authenticated()

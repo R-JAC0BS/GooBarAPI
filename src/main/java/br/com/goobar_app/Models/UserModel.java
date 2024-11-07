@@ -55,7 +55,7 @@ public class UserModel extends GenericModel implements UserDetails {
     private List<BarModel> barFavoritos;
 
 
-    @OneToMany (mappedBy = "user", cascade = CascadeType.PERSIST,orphanRemoval = true)
+    @OneToMany (mappedBy = "user", cascade = CascadeType.PERSIST)
     @JsonManagedReference
     private List<BarModel> bar;
 

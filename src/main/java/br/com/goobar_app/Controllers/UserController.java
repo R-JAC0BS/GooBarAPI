@@ -125,7 +125,7 @@ public class UserController {
     @PostMapping ("/Upload")
     public ResponseEntity <String> upload (@RequestParam("file") MultipartFile file ) throws Exception {
         imageService.uploadImage(file);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Imagem Salva");
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserStatus.USER_IMAGE_SUCEFUL.toString());
     }
 
 
