@@ -16,6 +16,7 @@ import br.com.goobar_app.UserRepository.BarRepository;
 import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.ExtractEmail;
 import br.com.goobar_app.service.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -171,7 +172,7 @@ public class BarController {
     @GetMapping("/findBar")
     public ResponseEntity <Page <BarModel>> getUsers() {
         Pageable pageable = PageRequest.of(0, 20);
-        Page <BarModel> bars = barRepository.findAll(pageable);
+        Page <BarModel> bars = barRepository.findAllByEnderecoIsNotNullAndImagemurlIsNotNull(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(bars);
     }
 
@@ -206,4 +207,26 @@ public class BarController {
         Page <BarModel> bar = barRepository.findByAvaliacaoGreaterThan(nota, peage);
         return ResponseEntity.status(HttpStatus.OK).body(bar);
     }
+
+    /*
+    METODO UNICO PARA FAZER REGISTRO COMPLETO DO BAR FOTO/LOC/COMPLEMENTOS
+     */
+   /*
+    @PostMapping ("/FRegsiter")
+    public ResponseEntity<String> FRegister(@RequestParam("bar") String barJson,
+                                            @RequestParam("file") MultipartFile file) throws Exception {
+
+        // Converte o JSON para BarDto
+        ObjectMapper objectMapper = new ObjectMapper();
+        BarDto bar = objectMapper.readValue(barJson, BarDto.class);
+
+        // Copia as propriedades do BarDto para o BarModel
+        BeanUtils.copyProperties(bar, barModel);
+
+        // Chama o serviço para registrar o bar
+        barService.FRegisterBar(ExtractEmail.extrairEmail(), barModel, file);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(BarStatus.BAR_CREATE.toString());
+    }
+       */
 }

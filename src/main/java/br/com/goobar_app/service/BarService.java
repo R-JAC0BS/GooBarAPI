@@ -16,8 +16,11 @@ import br.com.goobar_app.UserRepository.UserRepository;
 import br.com.goobar_app.components.Avalicao;
 import br.com.goobar_app.components.GlobalException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,8 @@ public class BarService {
 
     @Autowired
     private final EnderecoRepository enderecoRepository ;
+    @Autowired
+    private ImageService imageService;
 
     public BarService(UserRepository userRepository, BarRepository barRepository, EnderecoRepository enderecoRepository) {
         this.userRepository = userRepository;
@@ -153,7 +158,7 @@ public class BarService {
     @Transactional
     public String setEndereco(UUID id, EnderecoDTO enderecoDTO) throws BarException{
         Optional<BarModel> barOptional = barRepository.findById(id);
-
+        System.out.println(barOptional);
         if (enderecoDTO.latitude() == null || enderecoDTO.longitude() == null)
             throw new BarException(BarStatus.LOCALIZATION_BAR_ERROR);
 
@@ -171,9 +176,11 @@ public class BarService {
             // Salvar o BarModel se a relação for um-para-um
             bar.setEndereco(enderecoModel);
             barRepository.save(bar);
+        }else {
+            throw new BarException(BarStatus.BAR_NOT_FOUND);
         }
 
-        throw new BarException(BarStatus.BAR_NOT_FOUND);
+        return "tudo certo";
     }
 
     public List<BarModel> GetFavoritos (String email) throws BarException {
@@ -185,4 +192,45 @@ public class BarService {
             throw new BarException(BarStatus.FAVORITE_BAR_SAVE);
         }
     }
+/*
+    @Transactional
+    public BarModel FRegisterBar(String email, BarModel barModel, MultipartFile file) throws Exception {
+
+
+        UserModel user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BarException(BarStatus.LOCALIZATION_BAR_ERROR));
+
+
+        barModel.setUser(user);
+        barModel.setEmail(email);
+        barModel.setImagemurl(imageService.NewImage(file));
+
+
+
+
+        List<BarModel> barList = user.getBar();
+        barList.add(barModel);
+
+
+        user.setRole(TypeRole.CNPJ);
+        user.setBar(barList);
+
+
+        user = userRepository.save(user);
+
+
+        return barRepository.save(barModel);
+    }
+  */
+
+
+    /*
+        public List <BarModel> filterBarNotRegister (Pageable page) throws BarException {
+        List <BarModel> barList = barRepository.findAll(page);
+        barList.removeIf(bar -> bar.getEndereco() == null || bar.getImagemurl() == null);
+        return barList;
+    }
+     */
+
+
 }

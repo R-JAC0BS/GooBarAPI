@@ -82,6 +82,10 @@ public class ImageService {
                  throw new RuntimeException(e);
              }});}
 
+    public String NewImage (MultipartFile file) throws Exception {
+        return cloudNaryService.upload(file);
+    }
+
 
     public String getImageBar(UUID id) throws Exception {
         if (id == null){
