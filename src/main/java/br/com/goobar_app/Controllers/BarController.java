@@ -70,13 +70,13 @@ public class BarController {
         Metodo pra registar bar
          */
     @PostMapping("/registerBar")
-    public ResponseEntity <String>  registerBar(@RequestBody BarDto bar) throws Exception {
+    public ResponseEntity <UUID>  registerBar(@RequestBody BarDto bar) throws Exception {
         barModel.setId(null);
         //Copia os propiedades do BarDto para o barModel
         BeanUtils.copyProperties(bar, barModel);
         //Envia o Email e o objeto bar para classe barService
-        barService.setUserBar(ExtractEmail.extrairEmail(), barModel);
-       return ResponseEntity.status(HttpStatus.CREATED).body(ExtractEmail.extrairEmail());
+        var barS = barService.setUserBar(ExtractEmail.extrairEmail(), barModel);
+       return ResponseEntity.status(HttpStatus.CREATED).body(barS);
     }
     /*
         Metodo para deletar o Bar seu propio Bar
