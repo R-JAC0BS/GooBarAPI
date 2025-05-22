@@ -18,19 +18,10 @@ public class ExtractEmail {
 
         try {
 
-            /*
-            Responsavel por extrair os emails do usuario Autenticado
-             */
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-               /*
-                Retorna o o User
-             */
             Optional<UserModel> optionalUserModel = (Optional<UserModel>) authentication.getPrincipal();
 
-            /*
-                faz dowcast do email e retorna no metodo
-             */
             return optionalUserModel.map(UserModel::getEmail).orElse("");
         }catch (Exception e){
             throw new Exception ("Usuario não existe ou não esta autenticado");
